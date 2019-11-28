@@ -1,8 +1,7 @@
 '''
-NOTES:
-Add socket to connect with lock.
-Use different port for said connection.
-Create extra column in MySQL for ports.
+
+TODO:
+Registration of accounts and locks.
 
 UPDATE 1:
 Abandon awake locks functionality.
@@ -14,7 +13,6 @@ See projects/tests/ server1, server2 and clientmulcon.
 
 UPDATE 3:
 Awakening locks is implemented.
-TODO: registration of accounts and locks.
 
 '''
 
@@ -132,13 +130,72 @@ def is_valid_login(identifier):
 
 def get_lock_address(username):
 	lockdbcursor = lockdb.cursor()
-	query = "SELECT interfaceip, port FROM accounts WHERE username={0}"
+	query = "SELECT interfaceip, port FROM accounts WHERE username='{0}'"
 	lockdbcursor.execute(query.format(username))
 	lockdbresult = lockdbcursor.fetchall()
 
 	lock_address = lockdbresult[0]
 
 	return lock_address
+
+
+def get_lock_address_by_interface(interface):
+	lockdbcursor = lockdb.cursor()
+	query = "SELECT interfaceip, port FROM accounts WHERE interface='{0}'"
+	lockdbcursor.execute(query.format(interface))
+	lockdbresult = lockdbcursor.fetchall()
+
+	lock_address = lockdbresult[0]
+
+	return lock_address
+
+
+def is_unique_name(username):
+	lockdbcursor = lockdb.cursor()
+	query = "SELECT username FROM accounts"
+	lockdbcursor.execute(query.format(username))
+	lockdbresult = lockdbcursor.fetchall()
+
+	for x in lockdbresult:
+		if x[0] == username:
+			return False
+
+	return True
+
+
+def does_lock_exist(interface):
+	lockdbcursor = lockdb.cursor()
+	query = "SELECT interface FROM accounts"
+	lockdbcursor.execute(query)
+	lockdbresult = lockdbcursor.fetchall()
+
+	for x in lockdbresult:
+		if x[0] == interface:
+			return True
+
+	return False
+
+
+def create_lock():
+	pass
+
+
+def create_account(username, password, interface):
+	if is_unique_name(username):
+		if does_lock_exist(interface):
+			lock_address = get_lock_address_by_interface(interface)
+			
+			lockdbcursor = lockdb.cursor()
+			query = "INSERT INTO accounts (username, pass, interface, interfaceip, port) VALUES ('{0}', '{1}', '{2}', '{3}', {4});"
+			lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
+			lockdb.commit()
+
+			return "CREATIONSUCCEEDED"
+
+		else:
+			return "CREATIONFAILED"
+	else:
+		return "CREATIONFAILED"
 
 
 def main():
@@ -156,27 +213,34 @@ def main():
 		identifier = identifier.decode().split()
 
 		if identifier[0] == "CLIENT":
-			if is_valid_login(identifier):
-				#dbcode
-				print("login verified")
-				username = "'" + identifier[2] + "'"
-				lock_address = get_lock_address(username)
-				print(lock_address)
+			username = identifier[2]
+			if identifier[1] == "LOGIN":
+				if is_valid_login(identifier):
+					#dbcode
+					print("login verified")
+					lock_address = get_lock_address(username)
+					print(lock_address)
 
-				lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				lock_sock.bind(('192.168.226.135', PORT))
-				lock_sock.connect(lock_address)
-				LOCKS[lock_address] = lock_sock
+					lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+					lock_sock.bind(('192.168.226.135', PORT))
+					lock_sock.connect(lock_address)
+					LOCKS[lock_address] = lock_sock
 
-				client = Client(client_sock, client_address, lock_sock, lock_address)
-				CLIENTS[client_address] = client_sock
+					client = Client(client_sock, client_address, lock_sock, lock_address)
+					CLIENTS[client_address] = client_sock
 
-				t = Thread(target=client.client_handler, args=())
-				t.start()
+					t = Thread(target=client.client_handler, args=())
+					t.start()
 
-			else:
-				client_sock.sendall(bytes("INVALID LOGIN", 'utf8'))
-				client_sock.close()
+				else:
+					client_sock.sendall(bytes("INVALID LOGIN", 'utf8'))
+					client_sock.close()
+
+			if identifier[1] == "REGISTER":
+				password = identifier[3]
+				interface = identifier[4]
+				creation_result = create_account(username, password, interface)
+				client_sock.sendall(bytes(creation_result, 'utf8'))
 
 
 if __name__ == '__main__':
