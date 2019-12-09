@@ -28,6 +28,63 @@ class Database:
 			passwd=password,
 			database=database
 		)
+		self.lockdbcursor = self.lockdb.cursor()
+
+	def is_valid_login(self, username, password):
+		query = "SELECT pass FROM accounts WHERE username='{0}'"
+		self.lockdbcursor.execute(query.format(username))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		for x in lockdbresult:
+			if x[0] == password:
+				return True
+
+		return False
+
+	def get_lock_address(self, username):
+		query = "SELECT interfaceip, port FROM accounts WHERE username='{0}'"
+		self.lockdbcursor.execute(query.format(username))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		lock_address = lockdbresult[0]
+
+		return lock_address
+
+	def get_lock_address_by_interface(self, interface):
+		query = "SELECT interfaceip, port FROM accounts WHERE interface='{0}'"
+		self.lockdbcursor.execute(query.format(interface))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		lock_address = lockdbresult[0]
+
+		return lock_address
+
+	def is_unique_name(self, username):
+		query = "SELECT username FROM accounts"
+		self.lockdbcursor.execute(query.format(username))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		for x in lockdbresult:
+			if x[0] == username:
+				return False
+
+		return True
+
+	def does_lock_exist(self, interface):
+		query = "SELECT interface FROM accounts"
+		self.lockdbcursor.execute(query)
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		for x in lockdbresult:
+			if x[0] == interface:
+				return True
+
+		return False
+
+	def insert_account(self, username, password, interface, lock_address):
+		query = "INSERT INTO accounts (username, pass, interface, interfaceip, port) VALUES ('{0}', '{1}', '{2}', '{3}', {4});"
+		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
+		lockdb.commit()
 
 
 class Client:
@@ -85,80 +142,11 @@ def create_server():
 	return sck
 
 
-def is_valid_login(identifier):
-	lockdbcursor = lockdb.cursor()
-	query = "SELECT pass FROM accounts WHERE username={0}"
-	lockdbcursor.execute(query.format("'" + identifier[2] + "'"))
-	lockdbresult = lockdbcursor.fetchall()
-
-	for x in lockdbresult:
-		if x[0] == identifier[3]:
-			return True
-
-	return False
-
-
-def get_lock_address(username):
-	lockdbcursor = lockdb.cursor()
-	query = "SELECT interfaceip, port FROM accounts WHERE username='{0}'"
-	lockdbcursor.execute(query.format(username))
-	lockdbresult = lockdbcursor.fetchall()
-
-	lock_address = lockdbresult[0]
-
-	return lock_address
-
-
-def get_lock_address_by_interface(interface):
-	lockdbcursor = lockdb.cursor()
-	query = "SELECT interfaceip, port FROM accounts WHERE interface='{0}'"
-	lockdbcursor.execute(query.format(interface))
-	lockdbresult = lockdbcursor.fetchall()
-
-	lock_address = lockdbresult[0]
-
-	return lock_address
-
-
-def is_unique_name(username):
-	lockdbcursor = lockdb.cursor()
-	query = "SELECT username FROM accounts"
-	lockdbcursor.execute(query.format(username))
-	lockdbresult = lockdbcursor.fetchall()
-
-	for x in lockdbresult:
-		if x[0] == username:
-			return False
-
-	return True
-
-
-def does_lock_exist(interface):
-	lockdbcursor = lockdb.cursor()
-	query = "SELECT interface FROM accounts"
-	lockdbcursor.execute(query)
-	lockdbresult = lockdbcursor.fetchall()
-
-	for x in lockdbresult:
-		if x[0] == interface:
-			return True
-
-	return False
-
-
-def create_lock():
-	pass
-
-
-def create_account(username, password, interface):
-	if is_unique_name(username):
-		if does_lock_exist(interface):
-			lock_address = get_lock_address_by_interface(interface)
-			
-			lockdbcursor = lockdb.cursor()
-			query = "INSERT INTO accounts (username, pass, interface, interfaceip, port) VALUES ('{0}', '{1}', '{2}', '{3}', {4});"
-			lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
-			lockdb.commit()
+def create_account(username, password, interface, database):
+	if database.is_unique_name(username):
+		if database.does_lock_exist(interface):
+			lock_address = database.get_lock_address_by_interface(interface)
+			database.insert_account(username, password, interface, lock_address)
 
 			return "CREATIONSUCCEEDED"
 
@@ -171,7 +159,9 @@ def create_account(username, password, interface):
 def main():
 	global PORT
 	global IP
+	
 	sock = create_server()
+	database = Database('192.168.226.137', 'suser', 'password', 'lockbase')
 
 	while True:
 		client_sock, client_address = sock.accept()
@@ -180,10 +170,13 @@ def main():
 		identifier = identifier.decode().split()
 
 		if identifier[0] == "CLIENT":
-			username = identifier[2]
 			if identifier[1] == "LOGIN":
-				if is_valid_login(identifier):
-					lock_address = get_lock_address(username)
+				
+				username = identifier[2]
+				password = identifier[3]
+
+				if database.is_valid_login(username, password):
+					lock_address = database.get_lock_address(username)
 					print(lock_address)
 
 					lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -202,9 +195,10 @@ def main():
 					client_sock.close()
 
 			if identifier[1] == "REGISTER":
+				username = identifier[2]
 				password = identifier[3]
 				interface = identifier[4]
-				creation_result = create_account(username, password, interface)
+				creation_result = create_account(username, password, interface, database)
 				client_sock.sendall(bytes(creation_result, 'utf8'))
 
 
