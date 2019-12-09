@@ -161,7 +161,7 @@ def main():
 	global IP
 	
 	sock = create_server()
-	database = Database('192.168.226.137', 'suser', 'password', 'lockbase')
+	database = Database('127.0.0.1', 'suser', 'password', 'lockbase')
 
 	while True:
 		client_sock, client_address = sock.accept()
