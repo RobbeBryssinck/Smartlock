@@ -1,21 +1,4 @@
-'''
-
-TODO:
-Registration of accounts and locks.
-
-UPDATE 1:
-Abandon awake locks functionality.
-Have locks connected at all times.
-
-UPDATE 2:
-Found a way to awaken locks.
-See projects/tests/ server1, server2 and clientmulcon.
-
-UPDATE 3:
-Awakening locks is implemented.
-
-'''
-
+'''Main script: server handling client/lock connection'''
 
 import socket
 import sys
@@ -24,17 +7,12 @@ from threading import *
 import mysql.connector
 
 
-IP = "192.168.226.135"
+IP = "192.168.226.137"
 SERVERPORT = 10000
 PORT = 10001
 CLIENTS = {}
 LOCKS = {}
-lockdb = mysql.connector.connect(
-	host="127.0.0.1",
-	user="suser",
-	passwd="password",
-	database="lockbase"
-)
+
 
 
 class Client:
@@ -49,9 +27,6 @@ class Client:
 	def client_handler(self):
 		global PORT
 
-		#dbcode
-		print("client handler started")
-
 		while True:
 			
 			data = self.client_sock.recv(1024)
@@ -59,22 +34,16 @@ class Client:
 
 			if data == "STATE":
 				self.get_state()
-				#dbcode
-				print("state sent")
 			elif data == "LOCK":
 				request = "LOCK"
 				self.lock_sock.sendall(bytes(request, 'utf8'))
 				data = self.lock_sock.recv(1024)
 				self.client_sock.sendall(data)
-				#dbcode
-				print("locked")
 			elif data == "UNLOCK":
 				request = "UNLOCK"
 				self.lock_sock.sendall(bytes(request, 'utf8'))
 				data = self.lock_sock.recv(1024)
 				self.client_sock.sendall(data)
-				#dbcode
-				print("unlock sent")
 			elif data == "DISCONNECT":
 				break
 
@@ -82,34 +51,20 @@ class Client:
 		self.lock_sock.close()
 		CLIENTS.pop(self.client_address)
 		LOCKS.pop(self.lock_address)
-		#dbcode
-		print("disconnected")
 
 	def get_state(self):
 		ask_state = "STATE"
-		print(ask_state)
 		self.lock_sock.send(bytes(ask_state, 'utf8'))
-		#dbcode
-		print("sent to lock")
 		state = self.lock_sock.recv(1024)
-		#dbcode
-		print("received from lock")
 		self.client_sock.sendall(state)
-		#dbcode
-		print(state.decode())
-		print("sent to client")
 
 
 def create_server():
-	''' Create a socket object '''
-
 	sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-	# bind the socket to the port
 	server_address = (IP, SERVERPORT)
 	sck.bind(server_address)
 
-	# give an amount of possible connections
 	sck.listen(5)
 
 	return sck
@@ -200,15 +155,12 @@ def create_account(username, password, interface):
 
 def main():
 	global PORT
+	global IP
 	sock = create_server()
-	#dbcode
-	print("Server started")
 
 	while True:
-		# wait for a new connection
 		client_sock, client_address = sock.accept()
-		#dbcode
-		print(client_address)
+
 		identifier = client_sock.recv(1024)
 		identifier = identifier.decode().split()
 
@@ -216,13 +168,11 @@ def main():
 			username = identifier[2]
 			if identifier[1] == "LOGIN":
 				if is_valid_login(identifier):
-					#dbcode
-					print("login verified")
 					lock_address = get_lock_address(username)
 					print(lock_address)
 
 					lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					lock_sock.bind(('192.168.226.135', PORT))
+					lock_sock.bind((IP, PORT))
 					lock_sock.connect(lock_address)
 					LOCKS[lock_address] = lock_sock
 

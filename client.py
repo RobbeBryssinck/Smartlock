@@ -1,3 +1,5 @@
+'''Client used to control lock'''
+
 import socket
 import sys
 
@@ -5,10 +7,10 @@ state = ""
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-address = ('192.168.226.135', 9998)
+address = ('192.168.226.137', 20000)
 sock.bind(address)
 
-server_address = ('192.168.226.135', 10000)
+server_address = ('192.168.226.137', 10000)
 sock.connect(server_address)
 
 
@@ -33,4 +35,4 @@ def creation_mode(sock):
 
 	sock.close()
 
-creation_mode(sock)
+login_mode(sock)
