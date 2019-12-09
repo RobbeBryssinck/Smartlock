@@ -1,4 +1,8 @@
-'''Main script: server handling client/lock connection'''
+'''
+Main script: server handling client/lock connection
+Usage: Set the IP-address to the server's IP-address.
+Launch the lock before logging in with the client.
+'''
 
 import socket
 import sys
@@ -13,6 +17,17 @@ PORT = 10001
 CLIENTS = {}
 LOCKS = {}
 
+
+class Database:
+	"""Used to access database"""
+
+	def __init__(self, ip, username, password, database):
+		self.lockdb = mysql.connector.connect(
+			host=ip,
+			user=username,
+			passwd=password,
+			database=database
+		)
 
 
 class Client:

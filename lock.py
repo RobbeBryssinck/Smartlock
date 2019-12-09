@@ -1,12 +1,16 @@
-'''Simulation of a lock'''
+'''
+Simulation of a lock
+Usage: set lock IP-address to the machine's IP.
+'''
 
 import socket
 import sys
 
+IP = "192.168.226.137"
 lock_state = "LOCKED"
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-address = ("192.168.226.137", 9999)
+address = (IP, 9999)
 sock.bind(address)
 sock.listen(5)
 conn, addr = sock.accept()
