@@ -11,13 +11,6 @@ from threading import *
 import mysql.connector
 
 
-IP = "145.93.88.232"
-SERVERPORT = 10000
-PORT = 10001
-CLIENTS = {}
-LOCKS = {}
-
-
 class Database:
 	"""Used to access database"""
 
@@ -97,11 +90,11 @@ class Client:
 		self.lock_address = lock_address
 
 	def client_handler(self):
-		global PORT
+
+		print("Started server handler")
 
 		while True:
 
-			print("Started server handler")
 			
 			data = self.client_sock.recv(1024)
 			data = data.decode()
@@ -118,7 +111,7 @@ class Client:
 				self.lock_sock.sendall(bytes(request, 'utf8'))
 				data = self.lock_sock.recv(1024)
 				self.client_sock.sendall(data)
-			elif data == "DISCONNECT":
+			else:
 				break
 
 		self.client_sock.close()
@@ -133,7 +126,7 @@ class Client:
 		self.client_sock.sendall(state)
 
 
-def create_server():
+def create_server(IP, SERVERPORT):
 	sck = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 	server_address = (IP, SERVERPORT)
@@ -159,14 +152,15 @@ def create_account(username, password, interface, database):
 
 
 def main():
-	global PORT
-	global IP
+	IP = "145.93.88.232"
+	SERVERPORT = 10000
 	
-	sock = create_server()
+	sock = create_server(IP, SERVERPORT)
 	database = Database('127.0.0.1', 'root', 'toor', 'lockbase')
 
 	while True:
 		client_sock, client_address = sock.accept()
+		print(client_address[0] + " connected")
 
 		identifier = client_sock.recv(1024)
 		identifier = identifier.decode().split()
@@ -178,18 +172,13 @@ def main():
 				password = identifier[3]
 
 				if database.is_valid_login(username, password):
+					client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
 					lock_address = database.get_lock_address(username)
-					print(lock_address)
 
 					lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-					lock_sock.bind((IP, PORT))
 					lock_sock.connect(lock_address)
-					LOCKS[lock_address] = lock_sock
 
 					client = Client(client_sock, client_address, lock_sock, lock_address)
-					CLIENTS[client_address] = client_sock
-
-					client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
 
 					t = Thread(target=client.client_handler, args=())
 					t.start()
@@ -199,10 +188,7 @@ def main():
 					client_sock.close()
 
 			if identifier[1] == "REGISTER":
-				username = identifier[2]
-				password = identifier[3]
-				interface = identifier[4]
-				creation_result = create_account(username, password, interface, database)
+				creation_result = create_account(identifier[2], identifier[3], identifier[4], database)
 				client_sock.sendall(bytes(creation_result, 'utf8'))
 
 

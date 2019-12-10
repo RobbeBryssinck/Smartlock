@@ -45,6 +45,7 @@ namespace SmartlockApp
             else
             {
                 // open activity
+                sock.Close();
             }
         }
     }
