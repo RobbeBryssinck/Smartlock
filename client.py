@@ -7,7 +7,7 @@ state = ""
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-server_address = ('145.93.88.232', 10000)
+server_address = ('192.168.1.66', 10000)
 sock.connect(server_address)
 
 

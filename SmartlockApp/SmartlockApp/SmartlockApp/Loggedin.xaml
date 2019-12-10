@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="SmartlockApp.Loggedin">
+    <ContentPage.Content>
+        <StackLayout>
+            <Button Text="Lock" Clicked="OnClickLock" 
+                HorizontalOptions="Center"
+                VerticalOptions="CenterAndExpand" />
+            <Button Text="Unlock" Clicked="OnClickUnlock" 
+                HorizontalOptions="Center"
+                VerticalOptions="CenterAndExpand" />
+            <Button Text="Log out" Clicked="OnClickLogout" 
+                HorizontalOptions="Center"
+                VerticalOptions="CenterAndExpand" />
+            <Label x:Name="messageLabel"
+               Text="message" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

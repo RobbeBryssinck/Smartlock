@@ -114,10 +114,9 @@ class Client:
 			else:
 				break
 
+		print(self.client_address[0] + " disconnected")
 		self.client_sock.close()
 		self.lock_sock.close()
-		CLIENTS.pop(self.client_address)
-		LOCKS.pop(self.lock_address)
 
 	def get_state(self):
 		ask_state = "STATE"
@@ -152,7 +151,7 @@ def create_account(username, password, interface, database):
 
 
 def main():
-	IP = "145.93.88.232"
+	IP = "192.168.1.66"
 	SERVERPORT = 10000
 	
 	sock = create_server(IP, SERVERPORT)

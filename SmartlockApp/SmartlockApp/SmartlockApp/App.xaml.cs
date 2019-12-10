@@ -10,7 +10,7 @@ namespace SmartlockApp
         {
             InitializeComponent();
 
-            MainPage = new MainPage();
+            MainPage = new NavigationPage(new SmartlockApp.MainPage());
         }
 
         protected override void OnStart()

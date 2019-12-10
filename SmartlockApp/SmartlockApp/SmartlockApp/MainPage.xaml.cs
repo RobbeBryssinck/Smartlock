@@ -20,11 +20,13 @@ namespace SmartlockApp
             InitializeComponent();
         }
 
-        public void OnClickConnect(object sender, EventArgs e)
+        public async void OnClickConnect(object sender, EventArgs e)
         {
-            Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            UniversalSocket universalSocket = new UniversalSocket();
+            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Socket sock = universalSocket.Sock;
 
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.232"), 10000);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
             sock.Connect(serverEP);
             EndPoint remote = (EndPoint)(serverEP);
 
@@ -44,8 +46,7 @@ namespace SmartlockApp
             }
             else
             {
-                // open activity
-                sock.Close();
+                await Navigation.PushAsync(new Loggedin());
             }
         }
     }
