@@ -24,7 +24,7 @@ namespace SmartlockApp
         {
             Socket sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.229"), 10000);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.232"), 10000);
             sock.Connect(serverEP);
             EndPoint remote = (EndPoint)(serverEP);
 
@@ -35,14 +35,15 @@ namespace SmartlockApp
             byte[] recvBuffer = new byte[1024];
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
             message = Encoding.ASCII.GetString(recvBuffer, 0, recv);
-            if (message == "INVALID LOGIN")
+
+            loginLabel.Text = message;
+
+            if (message == "LOGIN FAILED")
             {
                 sock.Close();
-                loginLabel.Text = "Login status: invalid login";
             }
             else
             {
-                loginLabel.Text = "Login status: valid login";
                 // open activity
             }
         }

@@ -11,7 +11,7 @@ from threading import *
 import mysql.connector
 
 
-IP = "192.168.226.137"
+IP = "145.93.88.232"
 SERVERPORT = 10000
 PORT = 10001
 CLIENTS = {}
@@ -100,6 +100,8 @@ class Client:
 		global PORT
 
 		while True:
+
+			print("Started server handler")
 			
 			data = self.client_sock.recv(1024)
 			data = data.decode()
@@ -148,12 +150,12 @@ def create_account(username, password, interface, database):
 			lock_address = database.get_lock_address_by_interface(interface)
 			database.insert_account(username, password, interface, lock_address)
 
-			return "CREATIONSUCCEEDED"
+			return "CREATION SUCCEEDED"
 
 		else:
-			return "CREATIONFAILED"
+			return "CREATION FAILED"
 	else:
-		return "CREATIONFAILED"
+		return "CREATION FAILED"
 
 
 def main():
@@ -161,7 +163,7 @@ def main():
 	global IP
 	
 	sock = create_server()
-	database = Database('127.0.0.1', 'suser', 'password', 'lockbase')
+	database = Database('127.0.0.1', 'root', 'toor', 'lockbase')
 
 	while True:
 		client_sock, client_address = sock.accept()
@@ -187,11 +189,13 @@ def main():
 					client = Client(client_sock, client_address, lock_sock, lock_address)
 					CLIENTS[client_address] = client_sock
 
+					client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
+
 					t = Thread(target=client.client_handler, args=())
 					t.start()
 
 				else:
-					client_sock.sendall(bytes("INVALID LOGIN", 'utf8'))
+					client_sock.sendall(bytes("LOGIN FAILED", 'utf8'))
 					client_sock.close()
 
 			if identifier[1] == "REGISTER":

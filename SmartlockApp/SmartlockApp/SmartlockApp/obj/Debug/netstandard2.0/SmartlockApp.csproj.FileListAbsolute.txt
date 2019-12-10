@@ -11,3 +11,16 @@ C:\Users\Robbe\source\repos\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\net
 C:\Users\Robbe\source\repos\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.dll
 C:\Users\Robbe\source\repos\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\ref\SmartlockApp.dll
 C:\Users\Robbe\source\repos\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.pdb
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\bin\Debug\netstandard2.0\SmartlockApp.deps.json
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\bin\Debug\netstandard2.0\SmartlockApp.dll
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\bin\Debug\netstandard2.0\ref\SmartlockApp.dll
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\bin\Debug\netstandard2.0\SmartlockApp.pdb
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.csprojAssemblyReference.cache
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\App.xaml.g.cs
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\MainPage.xaml.g.cs
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.AssemblyInfoInputs.cache
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.AssemblyInfo.cs
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\XamlC.stamp
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.dll
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\ref\SmartlockApp.dll
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.pdb
