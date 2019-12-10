@@ -25,3 +25,4 @@ C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp
 C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\ref\SmartlockApp.dll
 C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\SmartlockApp.pdb
 C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\Loggedin.xaml.g.cs
+C:\Users\Robbe\Documents\GitHub\Smartlock\SmartlockApp\SmartlockApp\SmartlockApp\obj\Debug\netstandard2.0\Register.xaml.g.cs

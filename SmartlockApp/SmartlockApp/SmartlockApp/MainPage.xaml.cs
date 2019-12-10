@@ -15,20 +15,24 @@ namespace SmartlockApp
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
+        Socket sock;
+        IPEndPoint serverEP;
+        EndPoint remote;
+
         public MainPage()
         {
             InitializeComponent();
+
+            UniversalSocket universalSocket = new UniversalSocket();
+            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            sock = universalSocket.Sock;
+            serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
+            remote = (EndPoint)(serverEP);
         }
 
         public async void OnClickConnect(object sender, EventArgs e)
         {
-            UniversalSocket universalSocket = new UniversalSocket();
-            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            Socket sock = universalSocket.Sock;
-
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
             sock.Connect(serverEP);
-            EndPoint remote = (EndPoint)(serverEP);
 
             string message = "CLIENT LOGIN " + usernameEntry.Text + " " + passwordEntry.Text;
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
@@ -38,16 +42,20 @@ namespace SmartlockApp
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
             message = Encoding.ASCII.GetString(recvBuffer, 0, recv);
 
-            loginLabel.Text = message;
-
-            if (message == "LOGIN FAILED")
-            {
-                sock.Close();
-            }
-            else
+            if (message == "LOGIN SUCCEEDED")
             {
                 await Navigation.PushAsync(new Loggedin());
             }
+            else
+            {
+                await DisplayAlert("Alert", "Login failed", "OK");
+                sock.Close();
+            }
+        }
+
+        public async void OnClickCreateAccount(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new Register());
         }
     }
 }

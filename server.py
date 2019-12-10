@@ -77,7 +77,7 @@ class Database:
 	def insert_account(self, username, password, interface, lock_address):
 		query = "INSERT INTO accounts (username, pass, interface, interfaceip, port) VALUES ('{0}', '{1}', '{2}', '{3}', {4});"
 		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
-		lockdb.commit()
+		self.lockdb.commit()
 
 
 class Client:
