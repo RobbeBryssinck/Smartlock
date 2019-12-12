@@ -13,23 +13,19 @@ namespace SmartlockApp
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class Register : ContentPage
     {
-        Socket sock;
-        IPEndPoint serverEP;
-        EndPoint remote;
-
         public Register()
         {
             InitializeComponent();
-
-            UniversalSocket universalSocket = new UniversalSocket();
-            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
-            remote = (EndPoint)(serverEP);
         }
 
         public async void OnClickRegister(object sender, EventArgs e)
         {
+            UniversalSocket universalSocket = new UniversalSocket();
+            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Socket sock = universalSocket.Sock;
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.190"), 10000);
+            EndPoint remote = (EndPoint)(serverEP);
+
             if (passwordEntry.Text == passwordConfirmEntry.Text)
             {
                 sock.Connect(serverEP);

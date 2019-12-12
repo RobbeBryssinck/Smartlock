@@ -15,23 +15,21 @@ namespace SmartlockApp
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
-        Socket sock;
-        IPEndPoint serverEP;
-        EndPoint remote;
-
         public MainPage()
         {
             InitializeComponent();
 
-            UniversalSocket universalSocket = new UniversalSocket();
-            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
-            remote = (EndPoint)(serverEP);
+            
         }
 
         public async void OnClickConnect(object sender, EventArgs e)
         {
+            UniversalSocket universalSocket = new UniversalSocket();
+            universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Socket sock = universalSocket.Sock;
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.190"), 10000);
+            EndPoint remote = (EndPoint)(serverEP);
+
             sock.Connect(serverEP);
 
             string message = "CLIENT LOGIN " + usernameEntry.Text + " " + passwordEntry.Text;

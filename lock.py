@@ -6,34 +6,33 @@ Usage: set lock IP-address to the machine's IP.
 import socket
 import sys
 
-IP = "192.168.1.66"
-lock_state = "LOCKED"
+IP = '145.93.89.19'
+lock_state = 'LOCKED'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 address = (IP, 9999)
 sock.bind(address)
 sock.listen(5)
-conn, addr = sock.accept()
-
-print("connection created")
 
 
 while True:
-	data = conn.recv(1024)
-	print("---" + data.decode() + "---")
-	if data.decode() == "STATE":
-		conn.sendall(bytes(lock_state, 'utf8'))
-		print("state sent")
-	elif data.decode() == "LOCK":
-		lock_state = "LOCKED"
-		conn.sendall(bytes(lock_state, 'utf8'))
-		print("lock sent")
-	elif data.decode() == "UNLOCK":
-		lock_state = "UNLOCKED"
-		conn.sendall(bytes(lock_state, 'utf8'))
-		print("unlock sent")
-	else:
-		break
+	conn, addr = sock.accept()
+	print("connection created")
 
-
-sock.close()
+	while True:
+		data = conn.recv(1024)
+		print("---" + data.decode() + "---")
+		if data.decode() == "STATE":
+			conn.sendall(bytes(lock_state, 'utf8'))
+			print("state sent")
+		elif data.decode() == "LOCK":
+			lock_state = "LOCKED"
+			conn.sendall(bytes(lock_state, 'utf8'))
+			print("lock sent")
+		elif data.decode() == "UNLOCK":
+			lock_state = "UNLOCKED"
+			conn.sendall(bytes(lock_state, 'utf8'))
+			print("unlock sent")
+		else:
+			conn.close()
+			break

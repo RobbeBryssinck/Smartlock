@@ -1,0 +1,7 @@
+Username: SpHsyQhe9K
+
+Database name: SpHsyQhe9K
+
+Password: fYrMfTbqN2
+
+Server: remotemysql.com
