@@ -6,7 +6,7 @@ Usage: set lock IP-address to the machine's IP.
 import socket
 import sys
 
-IP = '145.93.89.19'
+IP = '145.93.88.241'
 lock_state = 'LOCKED'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,7 +24,7 @@ while True:
 		print("---" + data.decode() + "---")
 		if data.decode() == "STATE":
 			conn.sendall(bytes(lock_state, 'utf8'))
-			print("state sent")
+			print(lock_state + " sent")
 		elif data.decode() == "LOCK":
 			lock_state = "LOCKED"
 			conn.sendall(bytes(lock_state, 'utf8'))

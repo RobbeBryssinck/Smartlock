@@ -99,38 +99,42 @@ class Client:
 
 		print("Started server handler")
 
-		while True:
-			self.lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		try:
+			while True:
+				self.lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-			data = self.client_sock.recv(1024)
-			data = data.decode()
+				data = self.client_sock.recv(1024)
+				data = data.decode()
 
-			if data == "STATE":
-				self.get_state()
+				if data == "STATE":
+					self.get_state()
 
-			elif data == "LOCK":
-				self.lock_sock.connect(self.lock_address)
-				request = "LOCK"
-				self.lock_sock.sendall(bytes(request, 'utf8'))
-				data = self.lock_sock.recv(1024)
-				self.lock_sock.close()
-				self.client_sock.sendall(data)
-				self.broadcast(data)
+				elif data == "LOCK":
+					self.lock_sock.connect(self.lock_address)
+					request = "LOCK"
+					self.lock_sock.sendall(bytes(request, 'utf8'))
+					data = self.lock_sock.recv(1024)
+					self.lock_sock.close()
+					self.client_sock.sendall(data)
 
-			elif data == "UNLOCK":
-				self.lock_sock.connect(self.lock_address)
-				request = "UNLOCK"
-				self.lock_sock.sendall(bytes(request, 'utf8'))
-				data = self.lock_sock.recv(1024)
-				self.lock_sock.close()
-				self.client_sock.sendall(data)
-				self.broadcast(data)
+				elif data == "UNLOCK":
+					self.lock_sock.connect(self.lock_address)
+					request = "UNLOCK"
+					self.lock_sock.sendall(bytes(request, 'utf8'))
+					data = self.lock_sock.recv(1024)
+					self.lock_sock.close()
+					self.client_sock.sendall(data)
 
-			else:
-				self.client_sock.close()
-				LOGINS.remove(self.username)
-				print(self.username + " disconnected")
-				break
+				else:
+					self.client_sock.close()
+					LOGINS.remove(self.username)
+					print(self.username + " disconnected")
+					break
+
+		except:
+			self.client_sock.close()
+			LOGINS.remove(self.username)
+			print(self.username + " disconnected")
 
 	def get_state(self):
 		self.lock_sock.connect(self.lock_address)
@@ -138,16 +142,6 @@ class Client:
 		self.lock_sock.send(bytes(ask_state, 'utf8'))
 		state = self.lock_sock.recv(1024)
 		self.client_sock.sendall(state)
-
-	def broadcast(self, state):
-		global LOCKS
-
-		for up_client in LOCKS[self.lock_address[0]]:
-			if up_client[0] != self.client_address[0]:
-				try:
-					up_client[1].sendall(state)
-				except:
-					pass
 
 
 def create_server(IP, SERVERPORT):
@@ -175,19 +169,10 @@ def create_account(username, password, interface, database):
 		return "CREATION FAILED"
 
 
-def update_locks_dict(lock_ip, client_ip, client_sock):
-	global LOCKS
-
-	if lock_ip in LOCKS:
-		LOCKS[lock_ip].append((client_ip, client_sock))
-	else:
-		LOCKS[lock_ip] = [(client_ip, client_sock)]
-
-
 def main():
 	global LOGINS
 
-	IP = '145.93.89.19'
+	IP = '145.93.88.241'
 	SERVERPORT = 10000
 
 	sock = create_server(IP, SERVERPORT)
@@ -195,7 +180,6 @@ def main():
 
 	while True:
 		client_sock, client_address = sock.accept()
-		print(client_address[0] + " connected")
 
 		identifier = client_sock.recv(1024)
 		identifier = identifier.decode().split()
@@ -205,6 +189,7 @@ def main():
 
 				username = identifier[2]
 				password = identifier[3]
+				print(username + " connected")
 
 				if database.is_valid_login(username, password):
 					if username not in LOGINS:
@@ -214,12 +199,12 @@ def main():
 						client = Client(client_sock, client_address, lock_address, username)
 
 						LOGINS.append(username)
-						update_locks_dict(lock_address[0], client_address[0], client_sock)
 
 						t = Thread(target=client.client_handler, args=())
 						t.start()
 
 					else:
+						print(username + " already logged in")
 						client_sock.sendall(bytes("LOGIN FAILED", 'utf8'))
 						client_sock.close()
 

@@ -2,10 +2,10 @@ import mysql.connector
 import optparse
 
 lockdb = mysql.connector.connect(
-	host="127.0.0.1",
-	user="root",
-	passwd="toor",
-	database="lockbase"
+	host="remotemysql.com",
+	user="SpHsyQhe9K",
+	passwd="fYrMfTbqN2",
+	database="SpHsyQhe9K"
 )
 
 def main():
