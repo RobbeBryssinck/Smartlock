@@ -12,7 +12,6 @@ import mysql.connector
 
 
 LOGINS = []
-LOCKS = {}
 
 
 class Database:
@@ -83,19 +82,37 @@ class Database:
 		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
 		self.lockdb.commit()
 
+	def get_interface_by_username(self, username):
+		query = "SELECT interface FROM accounts WHERE username='{0}';"
+		self.lockdbcursor.execute(query.format(username))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		return lockdbresult[0][0]
+
+	def change_username(self, lockname, interface):
+		try:
+			query = "UPDATE accounts SET lockname='{0}' WHERE interface='{1}';"
+			self.lockdbcursor.execute(query.format(lockname, interface))
+			self.lockdb.commit()
+			return "CHANGE SUCCEEDED"
+
+		except Exception as e:
+			print(e)
+			return "CHANGE FAILED"
+
 
 class Client:
 	"""Handle a client"""
 
-	def __init__(self, client_sock, client_address, lock_address, username):
+	def __init__(self, client_sock, client_address, lock_address, username, database):
 		self.client_sock = client_sock
 		self.client_address = client_address
 		self.lock_address = lock_address
 		self.username = username
+		self.database = database
 
 	def client_handler(self):
 		global LOGINS
-		global LOCKS
 
 		print("Started server handler")
 
@@ -125,13 +142,21 @@ class Client:
 					self.lock_sock.close()
 					self.client_sock.sendall(data)
 
+				elif data == "CHANGE NAME":
+					lockname = self.client_sock.recv(1024).decode()
+					interface = self.database.get_interface_by_username(self.username)
+					result = self.database.change_username(lockname, interface)
+					print(result)
+					self.client_sock.sendall(bytes(result, 'utf8'))
+
 				else:
 					self.client_sock.close()
 					LOGINS.remove(self.username)
 					print(self.username + " disconnected")
 					break
 
-		except:
+		except Exception as e:
+			print(e)
 			self.client_sock.close()
 			LOGINS.remove(self.username)
 			print(self.username + " disconnected")
@@ -196,7 +221,7 @@ def main():
 						client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
 
 						lock_address = database.get_lock_address(username)
-						client = Client(client_sock, client_address, lock_address, username)
+						client = Client(client_sock, client_address, lock_address, username, database)
 
 						LOGINS.append(username)
 
