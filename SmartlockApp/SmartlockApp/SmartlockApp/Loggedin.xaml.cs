@@ -7,6 +7,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace SmartlockApp
 {
@@ -23,48 +24,91 @@ namespace SmartlockApp
 
             UniversalSocket universalSocket = new UniversalSocket();
             sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("192.168.1.66"), 10000);
+            serverEP = new IPEndPoint(IPAddress.Parse("192.168.0.102"), 10000);
             remote = (EndPoint)(serverEP);
 
+            GetState();
+        }
+
+        public async void GetState()
+        {
+            // request state
             string message = "STATE";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 
+            // receive state
             byte[] recvBuffer = new byte[1024];
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
-            messageLabel.Text = Encoding.ASCII.GetString(recvBuffer, 0, recv);
+            string newState = Encoding.ASCII.GetString(recvBuffer, 0, recv);
+
+            // confirm state packet receive
+            string confirm = "CONFIRM";
+            byte[] confirmBuffer = Encoding.Default.GetBytes(confirm);
+            sock.Send(confirmBuffer);
+
+            // receive lock name
+            byte[] nameBuffer = new byte[1024];
+            int nameRecv = sock.ReceiveFrom(nameBuffer, ref remote);
+            string newName = Encoding.ASCII.GetString(nameBuffer, 0, nameRecv);
+            
+            // update state and name
+            messageLabel.Text = newState;
+            locknameLabel.Text = newName;
+
+            // check if state changed
+            if (newState != messageLabel.Text)
+            {
+                await DisplayAlert("State changed", "The lock's state is changed to " + newState, "OK");
+            }
+
+            // check if name changed
+            if (newName != locknameLabel.Text)
+            {
+                await DisplayAlert("Name changed", "The lock's name is changed to " + newName, "OK");
+            }
         }
 
         public async void OnClickLock(object sender, EventArgs e)
         {
+            // send lock request
             string message = "LOCK";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 
+            // receive lock state
             byte[] recvBuffer = new byte[1024];
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
             messageLabel.Text = Encoding.ASCII.GetString(recvBuffer, 0, recv);
 
-            if (Encoding.ASCII.GetString(recvBuffer, 0, recv) == "LOCKED")
+            if (messageLabel.Text == "LOCKED")
                 await DisplayAlert("Locked", "The lock is locked", "OK");
             else
+            {
+                messageLabel.Text = "";
                 await DisplayAlert("Error", "Something went wrong locking the lock", "OK");
+            }
         }
 
         public async void OnClickUnlock(object sender, EventArgs e)
         {
+            // send unlock request
             string message = "UNLOCK";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 
+            // receive lock state
             byte[] recvBuffer = new byte[1024];
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
             messageLabel.Text = Encoding.ASCII.GetString(recvBuffer, 0, recv);
 
-            if (Encoding.ASCII.GetString(recvBuffer, 0, recv) == "UNLOCKED")
+            if (messageLabel.Text == "UNLOCKED")
                 await DisplayAlert("Unlocked", "The lock is unlocked", "OK");
             else
+            {
+                messageLabel.Text = "";
                 await DisplayAlert("Error", "Something went wrong unlocking the lock", "OK");
+            }
         }
 
         public async void OnClickLogout(object sender, EventArgs e)

@@ -82,6 +82,13 @@ class Database:
 		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
 		self.lockdb.commit()
 
+	def get_lockname(self, interface):
+		query = "SELECT lockname FROM accounts WHERE interface='{0}';"
+		self.lockdbcursor.execute(query.format(interface))
+		lockdbresult = self.lockdbcursor.fetchall()
+
+		return lockdbresult[0][0]
+
 	def get_interface_by_username(self, username):
 		query = "SELECT interface FROM accounts WHERE username='{0}';"
 		self.lockdbcursor.execute(query.format(username))
@@ -110,6 +117,7 @@ class Client:
 		self.lock_address = lock_address
 		self.username = username
 		self.database = database
+		self.interface = self.database.get_interface_by_username(self.username)
 
 	def client_handler(self):
 		global LOGINS
@@ -144,8 +152,8 @@ class Client:
 
 				elif data == "CHANGE NAME":
 					lockname = self.client_sock.recv(1024).decode()
-					interface = self.database.get_interface_by_username(self.username)
-					result = self.database.change_username(lockname, interface)
+					result = self.database.change_username(lockname, self.interface)
+					print(lockname)
 					print(result)
 					self.client_sock.sendall(bytes(result, 'utf8'))
 
@@ -163,10 +171,14 @@ class Client:
 
 	def get_state(self):
 		self.lock_sock.connect(self.lock_address)
-		ask_state = "STATE"
-		self.lock_sock.send(bytes(ask_state, 'utf8'))
+		self.lock_sock.send(bytes("STATE", 'utf8'))
 		state = self.lock_sock.recv(1024)
 		self.client_sock.sendall(state)
+
+		confirm = self.client_sock.recv(1024)
+
+		lockname = self.database.get_lockname(self.interface)
+		self.client_sock.sendall(bytes(lockname, 'utf8'))
 
 
 def create_server(IP, SERVERPORT):
@@ -197,7 +209,7 @@ def create_account(username, password, interface, database):
 def main():
 	global LOGINS
 
-	IP = '145.93.88.241'
+	IP = '192.168.0.102'
 	SERVERPORT = 10000
 
 	sock = create_server(IP, SERVERPORT)

@@ -7,6 +7,8 @@
              x:Class="SmartlockApp.Loggedin">
     <ContentPage.Content>
         <StackLayout>
+            <Label x:Name="locknameLabel"
+               Text="lockname" />
             <Button Text="Lock" Clicked="OnClickLock" 
                 HorizontalOptions="Center"
                 VerticalOptions="CenterAndExpand" />

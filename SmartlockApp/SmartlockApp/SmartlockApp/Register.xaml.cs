@@ -23,7 +23,7 @@ namespace SmartlockApp
             UniversalSocket universalSocket = new UniversalSocket();
             universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket sock = universalSocket.Sock;
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.88.190"), 10000);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("192.168.0.102"), 10000);
             EndPoint remote = (EndPoint)(serverEP);
 
             if (passwordEntry.Text == passwordConfirmEntry.Text)
