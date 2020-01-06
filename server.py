@@ -209,7 +209,7 @@ def create_account(username, password, interface, database):
 def main():
 	global LOGINS
 
-	IP = '192.168.0.102'
+	IP = '145.93.89.25'
 	SERVERPORT = 10000
 
 	sock = create_server(IP, SERVERPORT)
