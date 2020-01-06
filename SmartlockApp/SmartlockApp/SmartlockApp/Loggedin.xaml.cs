@@ -7,7 +7,6 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace SmartlockApp
 {
@@ -24,13 +23,13 @@ namespace SmartlockApp
 
             UniversalSocket universalSocket = new UniversalSocket();
             sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("192.168.0.102"), 10000);
+            serverEP = new IPEndPoint(IPAddress.Parse("192.168.0.105"), 10000);
             remote = (EndPoint)(serverEP);
 
             GetState();
         }
 
-        public async void GetState()
+        public void GetState()
         {
             // request state
             string message = "STATE";
@@ -38,9 +37,9 @@ namespace SmartlockApp
             sock.Send(msgBuffer);
 
             // receive state
-            byte[] recvBuffer = new byte[1024];
-            int recv = sock.ReceiveFrom(recvBuffer, ref remote);
-            string newState = Encoding.ASCII.GetString(recvBuffer, 0, recv);
+            byte[] stateBuffer = new byte[1024];
+            int stateRecv = sock.ReceiveFrom(stateBuffer, ref remote);
+            string newState = Encoding.ASCII.GetString(stateBuffer, 0, stateRecv);
 
             // confirm state packet receive
             string confirm = "CONFIRM";
@@ -51,22 +50,10 @@ namespace SmartlockApp
             byte[] nameBuffer = new byte[1024];
             int nameRecv = sock.ReceiveFrom(nameBuffer, ref remote);
             string newName = Encoding.ASCII.GetString(nameBuffer, 0, nameRecv);
-            
+
             // update state and name
             messageLabel.Text = newState;
             locknameLabel.Text = newName;
-
-            // check if state changed
-            if (newState != messageLabel.Text)
-            {
-                await DisplayAlert("State changed", "The lock's state is changed to " + newState, "OK");
-            }
-
-            // check if name changed
-            if (newName != locknameLabel.Text)
-            {
-                await DisplayAlert("Name changed", "The lock's name is changed to " + newName, "OK");
-            }
         }
 
         public async void OnClickLock(object sender, EventArgs e)
