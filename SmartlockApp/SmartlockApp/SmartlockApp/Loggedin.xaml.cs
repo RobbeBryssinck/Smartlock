@@ -23,7 +23,7 @@ namespace SmartlockApp
 
             UniversalSocket universalSocket = new UniversalSocket();
             sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("192.168.0.105"), 10000);
+            serverEP = new IPEndPoint(IPAddress.Parse("145.93.89.25"), 10000);
             remote = (EndPoint)(serverEP);
 
             GetState();
@@ -32,7 +32,7 @@ namespace SmartlockApp
         public void GetState()
         {
             // request state
-            string message = "STATE";
+            string message = "STATE 0";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 
@@ -59,7 +59,7 @@ namespace SmartlockApp
         public async void OnClickLock(object sender, EventArgs e)
         {
             // send lock request
-            string message = "LOCK";
+            string message = "LOCK 0";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 
@@ -80,7 +80,7 @@ namespace SmartlockApp
         public async void OnClickUnlock(object sender, EventArgs e)
         {
             // send unlock request
-            string message = "UNLOCK";
+            string message = "UNLOCK 0";
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
 

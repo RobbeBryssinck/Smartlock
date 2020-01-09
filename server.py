@@ -37,14 +37,16 @@ class Database:
 
 		return False
 
-	def get_lock_address(self, username):
+	def get_lock_addresses(self, username):
+		lock_addresses = []
 		query = "SELECT interfaceip, port FROM accounts WHERE username='{0}'"
+
 		self.lockdbcursor.execute(query.format(username))
 		lockdbresult = self.lockdbcursor.fetchall()
+		for lock_address in lockdbresult:
+			lock_addresses.append(lock_address)
 
-		lock_address = lockdbresult[0]
-
-		return lock_address
+		return lock_addresses
 
 	def get_lock_address_by_interface(self, interface):
 		query = "SELECT interfaceip, port FROM accounts WHERE interface='{0}'"
@@ -111,10 +113,10 @@ class Database:
 class Client:
 	"""Handle a client"""
 
-	def __init__(self, client_sock, client_address, lock_address, username, database):
+	def __init__(self, client_sock, client_address, lock_addresses, username, database):
 		self.client_sock = client_sock
 		self.client_address = client_address
-		self.lock_address = lock_address
+		self.lock_addresses = lock_addresses
 		self.username = username
 		self.database = database
 		self.interface = self.database.get_interface_by_username(self.username)
@@ -129,28 +131,29 @@ class Client:
 				self.lock_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 				data = self.client_sock.recv(1024)
-				data = data.decode()
+				data = data.decode().split()
+				locknumber = int(data[1])
 
-				if data == "STATE":
-					self.get_state()
+				if data[0] == "STATE":
+					self.get_state(locknumber)
 
-				elif data == "LOCK":
-					self.lock_sock.connect(self.lock_address)
-					request = "LOCK"
+				elif data[0] == "LOCK":
+					self.lock_sock.connect(self.lock_addresses[locknumber])
+					request = "#SLOT|LOCK%"
 					self.lock_sock.sendall(bytes(request, 'utf8'))
 					data = self.lock_sock.recv(1024)
 					self.lock_sock.close()
 					self.client_sock.sendall(data)
 
-				elif data == "UNLOCK":
-					self.lock_sock.connect(self.lock_address)
-					request = "UNLOCK"
+				elif data[0] == "UNLOCK":
+					self.lock_sock.connect(self.lock_addresses[locknumber])
+					request = "#SLOT|OPEN%"
 					self.lock_sock.sendall(bytes(request, 'utf8'))
 					data = self.lock_sock.recv(1024)
 					self.lock_sock.close()
 					self.client_sock.sendall(data)
 
-				elif data == "CHANGE NAME":
+				elif data[0] == "CHANGENAME": # WARNING: Changed name of protocol (removed space)
 					lockname = self.client_sock.recv(1024).decode()
 					result = self.database.change_username(lockname, self.interface)
 					print(lockname)
@@ -169,9 +172,9 @@ class Client:
 			LOGINS.remove(self.username)
 			print(self.username + " disconnected")
 
-	def get_state(self):
-		self.lock_sock.connect(self.lock_address)
-		self.lock_sock.send(bytes("STATE", 'utf8'))
+	def get_state(self, locknumber):
+		self.lock_sock.connect(self.lock_addresses[locknumber])
+		self.lock_sock.send(bytes("#STATUS|SLOT%", 'utf8'))
 		state = self.lock_sock.recv(1024)
 		self.client_sock.sendall(state)
 
@@ -209,7 +212,7 @@ def create_account(username, password, interface, database):
 def main():
 	global LOGINS
 
-	IP = '145.93.89.25'
+	IP = '145.93.89.75'
 	SERVERPORT = 10000
 
 	sock = create_server(IP, SERVERPORT)
@@ -232,8 +235,8 @@ def main():
 					if username not in LOGINS:
 						client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
 
-						lock_address = database.get_lock_address(username)
-						client = Client(client_sock, client_address, lock_address, username, database)
+						lock_addresses = database.get_lock_addresses(username)
+						client = Client(client_sock, client_address, lock_addresses, username, database)
 
 						LOGINS.append(username)
 

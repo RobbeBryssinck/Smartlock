@@ -13,7 +13,7 @@ sock.connect(server_address)
 
 def login_mode(sock):
 	global state
-	sock.send(bytes("CLIENT LOGIN Robbe PassRobbe", 'utf8'))
+	sock.send(bytes("CLIENT LOGIN a b", 'utf8'))
 
 	data = sock.recv(1024)
 	print(data)
