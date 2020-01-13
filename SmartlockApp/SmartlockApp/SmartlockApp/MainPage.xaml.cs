@@ -18,8 +18,6 @@ namespace SmartlockApp
         public MainPage()
         {
             InitializeComponent();
-
-            
         }
 
         public async void OnClickConnect(object sender, EventArgs e)
@@ -27,12 +25,12 @@ namespace SmartlockApp
             UniversalSocket universalSocket = new UniversalSocket();
             universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket sock = universalSocket.Sock;
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.89.25"), 10000);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse(universalSocket.Serverip), 10000);
             EndPoint remote = (EndPoint)(serverEP);
 
             sock.Connect(serverEP);
 
-            string message = "CLIENT LOGIN " + usernameEntry.Text + " " + passwordEntry.Text;
+            string message = "LOGIN " + usernameEntry.Text + " " + passwordEntry.Text;
             byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
             sock.Send(msgBuffer);
             
@@ -40,13 +38,13 @@ namespace SmartlockApp
             int recv = sock.ReceiveFrom(recvBuffer, ref remote);
             message = Encoding.ASCII.GetString(recvBuffer, 0, recv);
 
-            if (message == "LOGIN SUCCEEDED")
+            if (message == "LOGINSUCCEEDED 1")
             {
                 await Navigation.PushAsync(new Loggedin());
             }
             else
             {
-                await DisplayAlert("Alert", "Login failed", "OK");
+                await DisplayAlert("Login failed", message, "OK");
                 sock.Close();
             }
         }

@@ -23,7 +23,7 @@ namespace SmartlockApp
 
             UniversalSocket universalSocket = new UniversalSocket();
             sock = universalSocket.Sock;
-            serverEP = new IPEndPoint(IPAddress.Parse("145.93.89.25"), 10000);
+            serverEP = new IPEndPoint(IPAddress.Parse(universalSocket.Serverip), 10000);
             remote = (EndPoint)(serverEP);
 
             GetState();

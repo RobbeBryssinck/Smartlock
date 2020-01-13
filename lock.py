@@ -6,11 +6,11 @@ Usage: set lock IP-address to the machine's IP.
 import socket
 import sys
 
-IP = '145.93.89.75'
+IP = '145.93.88.253'
 lock_state = 'LOCKED'
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-address = (IP, 9999)
+address = (IP, 23)
 sock.bind(address)
 sock.listen(5)
 

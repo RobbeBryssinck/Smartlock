@@ -9,10 +9,12 @@ import sys
 import os
 from threading import *
 import mysql.connector
+from configparser import ConfigParser
 
+config = ConfigParser()
+config.read('config.ini')
 
 LOGINS = []
-
 
 class Database:
 	"""Used to access database"""
@@ -212,7 +214,7 @@ def create_account(username, password, interface, database):
 def main():
 	global LOGINS
 
-	IP = '145.93.89.75'
+	IP = config.get('main', 'serverip')
 	SERVERPORT = 10000
 
 	sock = create_server(IP, SERVERPORT)
@@ -224,37 +226,38 @@ def main():
 		identifier = client_sock.recv(1024)
 		identifier = identifier.decode().split()
 
-		if identifier[0] == "CLIENT":
-			if identifier[1] == "LOGIN":
+		if identifier[0] == "LOGIN":
 
-				username = identifier[2]
-				password = identifier[3]
-				print(username + " connected")
+			username = identifier[1]
+			password = identifier[2]
+			print(username + " connected")
 
-				if database.is_valid_login(username, password):
-					if username not in LOGINS:
-						client_sock.sendall(bytes("LOGIN SUCCEEDED", 'utf8'))
+			if database.is_valid_login(username, password):
+				if username not in LOGINS:
+					lock_addresses = database.get_lock_addresses(username)
 
-						lock_addresses = database.get_lock_addresses(username)
-						client = Client(client_sock, client_address, lock_addresses, username, database)
+					locks = str(len(lock_addresses))
+					client_sock.sendall(bytes("LOGINSUCCEEDED " + locks, 'utf8'))
 
-						LOGINS.append(username)
+					client = Client(client_sock, client_address, lock_addresses, username, database)
 
-						t = Thread(target=client.client_handler, args=())
-						t.start()
+					LOGINS.append(username)
 
-					else:
-						print(username + " already logged in")
-						client_sock.sendall(bytes("LOGIN FAILED", 'utf8'))
-						client_sock.close()
+					t = Thread(target=client.client_handler, args=())
+					t.start()
 
 				else:
-					client_sock.sendall(bytes("LOGIN FAILED", 'utf8'))
+					print(username + " already logged in")
+					client_sock.sendall(bytes("LOGINFAILED", 'utf8'))
 					client_sock.close()
 
-			if identifier[1] == "REGISTER":
-				creation_result = create_account(identifier[2], identifier[3], identifier[4], database)
-				client_sock.sendall(bytes(creation_result, 'utf8'))
+			else:
+				client_sock.sendall(bytes("LOGINFAILED", 'utf8'))
+				client_sock.close()
+
+		if identifier[0] == "REGISTER":
+			creation_result = create_account(identifier[1], identifier[2], identifier[3], database)
+			client_sock.sendall(bytes(creation_result, 'utf8'))
 
 
 if __name__ == '__main__':

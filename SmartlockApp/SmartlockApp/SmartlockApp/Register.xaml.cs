@@ -23,14 +23,14 @@ namespace SmartlockApp
             UniversalSocket universalSocket = new UniversalSocket();
             universalSocket.Sock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             Socket sock = universalSocket.Sock;
-            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse("145.93.89.25"), 10000);
+            IPEndPoint serverEP = new IPEndPoint(IPAddress.Parse(universalSocket.Serverip), 10000);
             EndPoint remote = (EndPoint)(serverEP);
 
             if (passwordEntry.Text == passwordConfirmEntry.Text)
             {
                 sock.Connect(serverEP);
 
-                string message = "CLIENT REGISTER " + usernameEntry.Text + " " + passwordEntry.Text + " " + modelEntry.Text;
+                string message = "REGISTER " + usernameEntry.Text + " " + passwordEntry.Text + " " + modelEntry.Text;
                 byte[] msgBuffer = Encoding.ASCII.GetBytes(message);
                 sock.Send(msgBuffer);
 
