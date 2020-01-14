@@ -86,24 +86,17 @@ class Database:
 		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
 		self.lockdb.commit()
 
-	def get_lockname(self, interface):
-		query = "SELECT lockname FROM accounts WHERE interface='{0}';"
+	def get_lockname(self, interfaceip):
+		query = "SELECT lockname FROM accounts WHERE interfaceip='{0}';"
 		self.lockdbcursor.execute(query.format(interface))
 		lockdbresult = self.lockdbcursor.fetchall()
 
 		return lockdbresult[0][0]
 
-	def get_interface_by_username(self, username):
-		query = "SELECT interface FROM accounts WHERE username='{0}';"
-		self.lockdbcursor.execute(query.format(username))
-		lockdbresult = self.lockdbcursor.fetchall()
-
-		return lockdbresult[0][0]
-
-	def change_username(self, lockname, interface):
+	def change_username(self, lockname, interfaceip):
 		try:
-			query = "UPDATE accounts SET lockname='{0}' WHERE interface='{1}';"
-			self.lockdbcursor.execute(query.format(lockname, interface))
+			query = "UPDATE accounts SET lockname='{0}' WHERE interfaceip='{1}';"
+			self.lockdbcursor.execute(query.format(lockname, interfaceip))
 			self.lockdb.commit()
 			return "CHANGE SUCCEEDED"
 
@@ -121,7 +114,7 @@ class Client:
 		self.lock_addresses = lock_addresses
 		self.username = username
 		self.database = database
-		self.interface = self.database.get_interface_by_username(self.username)
+		self.locknames = self.database.get_locknames_by_ip(self.lock_addresses)
 
 	def client_handler(self):
 		global LOGINS
@@ -156,9 +149,9 @@ class Client:
 					self.lock_sock.close()
 					self.client_sock.sendall(data)
 
-				elif data[0] == "CHANGENAME": # WARNING: Changed name of protocol (removed space)
+				elif data[0] == "CHANGENAME":
 					lockname = self.client_sock.recv(1024).decode()
-					result = self.database.change_username(lockname, self.interface)
+					result = self.database.change_username(lockname, self.lock_addresses[locknumber][0])
 					print(lockname)
 					print(result)
 					self.client_sock.sendall(bytes(result, 'utf8'))
@@ -183,7 +176,7 @@ class Client:
 
 		confirm = self.client_sock.recv(1024)
 
-		lockname = self.database.get_lockname(self.interface)
+		lockname = self.database.get_lockname(self.lock_address[locknumber][0])
 		print(lockname)
 		self.client_sock.sendall(bytes(lockname, 'utf8'))
 
