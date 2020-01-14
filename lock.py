@@ -20,12 +20,12 @@ while True:
 
 	while True:
 		data = conn.recv(1024)
-		if data.decode() == "STATE":
+		if data.decode() == "#STATUS|SLOT%":
 			conn.sendall(bytes(lock_state, 'utf8'))
-		elif data.decode() == "LOCK":
+		elif data.decode() == "#SLOT|LOCK%":
 			lock_state = "LOCKED"
 			conn.sendall(bytes(lock_state, 'utf8'))
-		elif data.decode() == "UNLOCK":
+		elif data.decode() == "#SLOT|OPEN%":
 			lock_state = "UNLOCKED"
 			conn.sendall(bytes(lock_state, 'utf8'))
 		else:

@@ -134,6 +134,7 @@ class Client:
 
 				data = self.client_sock.recv(1024)
 				data = data.decode().split()
+				print(data)
 				locknumber = int(data[1])
 
 				if data[0] == "STATE":
@@ -183,6 +184,7 @@ class Client:
 		confirm = self.client_sock.recv(1024)
 
 		lockname = self.database.get_lockname(self.interface)
+		print(lockname)
 		self.client_sock.sendall(bytes(lockname, 'utf8'))
 
 
@@ -222,8 +224,12 @@ def main():
 
 	while True:
 		client_sock, client_address = sock.accept()
+		print("Connection created ")
+		print(client_address[0])
+		print(client_address[1])
 
 		identifier = client_sock.recv(1024)
+		print("packet received: identifier")
 		identifier = identifier.decode().split()
 
 		if identifier[0] == "LOGIN":
