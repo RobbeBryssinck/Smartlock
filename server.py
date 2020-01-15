@@ -86,17 +86,17 @@ class Database:
 		self.lockdbcursor.execute(query.format(username, password, interface, lock_address[0], lock_address[1]))
 		self.lockdb.commit()
 
-	def get_lockname(self, interfaceip):
-		query = "SELECT lockname FROM accounts WHERE interfaceip='{0}';"
-		self.lockdbcursor.execute(query.format(interface))
+	def get_lockname(self, lock_address):
+		query = "SELECT lockname FROM accounts WHERE interfaceip='{0}' AND port={1};"
+		self.lockdbcursor.execute(query.format(lock_address[0], lock_address[1]))
 		lockdbresult = self.lockdbcursor.fetchall()
 
 		return lockdbresult[0][0]
 
-	def change_username(self, lockname, interfaceip):
+	def change_username(self, lockname, lock_address):
 		try:
-			query = "UPDATE accounts SET lockname='{0}' WHERE interfaceip='{1}';"
-			self.lockdbcursor.execute(query.format(lockname, interfaceip))
+			query = "UPDATE accounts SET lockname='{0}' WHERE interfaceip='{1}' AND port={2};"
+			self.lockdbcursor.execute(query.format(lockname, lock_address[0], lock_address[1]))
 			self.lockdb.commit()
 			return "CHANGE SUCCEEDED"
 
@@ -114,7 +114,6 @@ class Client:
 		self.lock_addresses = lock_addresses
 		self.username = username
 		self.database = database
-		self.locknames = self.database.get_locknames_by_ip(self.lock_addresses)
 
 	def client_handler(self):
 		global LOGINS
@@ -135,7 +134,7 @@ class Client:
 
 				elif data[0] == "LOCK":
 					self.lock_sock.connect(self.lock_addresses[locknumber])
-					request = "#SLOT|LOCK%"
+					request = "#SLOT,LOCK%"
 					self.lock_sock.sendall(bytes(request, 'utf8'))
 					data = self.lock_sock.recv(1024)
 					self.lock_sock.close()
@@ -143,7 +142,7 @@ class Client:
 
 				elif data[0] == "UNLOCK":
 					self.lock_sock.connect(self.lock_addresses[locknumber])
-					request = "#SLOT|OPEN%"
+					request = "#SLOT,OPEN%"
 					self.lock_sock.sendall(bytes(request, 'utf8'))
 					data = self.lock_sock.recv(1024)
 					self.lock_sock.close()
@@ -151,7 +150,7 @@ class Client:
 
 				elif data[0] == "CHANGENAME":
 					lockname = self.client_sock.recv(1024).decode()
-					result = self.database.change_username(lockname, self.lock_addresses[locknumber][0])
+					result = self.database.change_username(lockname, self.lock_addresses[locknumber])
 					print(lockname)
 					print(result)
 					self.client_sock.sendall(bytes(result, 'utf8'))
@@ -170,13 +169,13 @@ class Client:
 
 	def get_state(self, locknumber):
 		self.lock_sock.connect(self.lock_addresses[locknumber])
-		self.lock_sock.send(bytes("#STATUS|SLOT%", 'utf8'))
+		self.lock_sock.send(bytes("#STATUS,SLOT%", 'utf8'))
 		state = self.lock_sock.recv(1024)
 		self.client_sock.sendall(state)
 
 		confirm = self.client_sock.recv(1024)
 
-		lockname = self.database.get_lockname(self.lock_address[locknumber][0])
+		lockname = self.database.get_lockname(self.lock_addresses[locknumber])
 		print(lockname)
 		self.client_sock.sendall(bytes(lockname, 'utf8'))
 
